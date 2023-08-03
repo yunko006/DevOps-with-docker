@@ -115,6 +115,8 @@ do
 done
 ```
 
+> Sous windows les fichiers sont save avec le format de fin de ligne CRLF alors que dans notre cas dans les systeme UNIX les fichers doivent etre save avec le format de fin de ligne LF. On peut le faire avec VScode : ouvrir le fichier -> ctrl + shift + p (ouvrir la palette de commande) -> change end of line sequence -> choisir LF
+
 Dockerfile 
 ```bash
 FROM ubuntu:20.04
