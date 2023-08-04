@@ -132,7 +132,7 @@ RUN apt-get update
 RUN apt-get -y install curl
 
 # Alternatively, if we skipped chmod earlier, we can add execution permissions during the build.
-RUN chmod +x exo.sh
+RUN chmod +x 1-7.sh
 
 # When running docker run the command will be ./hello.sh
 CMD ./1-7.sh
@@ -194,3 +194,85 @@ Shell
 docker build . -t web-server
 docker run -it web-server
 ```
+
+# Exercise 1.9: Volumes
+
+In this exercise we won't create a new Dockerfile.
+
+Image devopsdockeruh/simple-web-service creates a timestamp every two seconds to /usr/src/app/text.log when it's not given a command. Start the container with bind mount so that the logs are created into your filesystem.
+
+Submit the command you used to complete the exercise.
+
+Hint: read the note that was made just before this exercise!
+
+Solution :
+Shell (windows)
+```bash
+ni log.txt
+
+docker run -v "$(pwd)/log.txt:/usr/src/app/text.log" devopsdockeruh/simple-web-service
+```
+
+Check log.txt pour voir si ca écrit bien dedans.
+
+
+# Exercise 1.10: Ports open
+
+In this exercise, we won't create a new Dockerfile.
+
+The image devopsdockeruh/simple-web-service will start a web service in port 8080 when given the argument "server". In Exercise 1.8 you already did a image that can be used to run the web service without any argument.
+
+Use now the -p flag to access the contents with your browser. The output to your browser should be something like: { message: "You connected to the following path: ...
+
+Submit your used commands for this exercise.
+
+Solution : 
+
+Shell
+```bash
+docker run -p 8080:8080 web-server
+```
+
+ouvrir 127.0.0.1:8080/ il y a normalement : message	"You connected to the following path: /"
+
+
+# Exercise 1.11: Spring
+
+Create a Dockerfile for an old Java Spring project that can be found from the course repository.
+
+The setup should be straightforward with the README instructions. Tips to get you started:
+
+Use openjdk image FROM openjdk:_tag_ to get Java instead of installing it manually. Pick the tag by using the README and Docker Hub page.
+
+You've completed the exercise when you see a 'Success' message in your browser.
+
+Submit the Dockerfile you used to run the container.
+
+Solution : 
+
+Dockerfile 
+```bash
+# get java 8
+FROM openjdk:8
+
+EXPOSE 8080
+
+WORKDIR usr/src
+
+COPY . .
+
+# build the project
+RUN ./mvnw package
+
+# run
+CMD ["java", "-jar", "./target/docker-example-1.1.3.jar"]
+```
+
+Shell 
+```bash
+docker build . -t spring-project
+
+docker run -p 8080:8080 spring-project
+```
+
+Ouvrir 127.0.0.1:8080 cliquer sur le button, voir success!
