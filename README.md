@@ -276,3 +276,116 @@ docker run -p 8080:8080 spring-project
 ```
 
 Ouvrir 127.0.0.1:8080 cliquer sur le button, voir success!
+
+
+# Mandatory Exercise 1.12: Hello, frontend!
+
+A good developer creates well-written READMEs. Such that they can be used to create Dockerfiles with ease.
+
+Clone, fork or download the project from https://github.com/docker-hy/material-applications/tree/main/example-frontend.
+
+Create a Dockerfile for the project (example-frontend) and give a command so that the project runs in a Docker container with port 5000 exposed and published so when you start the container and navigate to http://localhost:5000 you will see message if you're successful.
+
+    note that the port 5000 is reserved in the more recent OSX versions (Monterey, Big Sur), so you have to use some other host port
+
+Submit the Dockerfile.
+
+As in other exercises, do not alter the code of the project
+
+    TIP: The project has install instructions in README.
+
+    TIP: Note that the app starts to accept connections when "Accepting connections at http://localhost:5000" has been printed to the screen, this takes a few seconds
+
+    TIP: You do not have to install anything new outside containers.
+
+## Solution : 
+
+### Readme : 
+```md
+Prerequisites
+
+Install node.
+
+Example node install instructions for LTS node 16.x:
+
+curl -sL https://deb.nodesource.com/setup_16.x | bash
+sudo apt install -y nodejs
+
+Check your install with node -v && npm -v
+
+Install all packages with npm install
+Starting in production mode
+Exercise 1.12 -> to run the project
+
+First you need to build the static files with npm run build
+
+This will generate them into build folder.
+
+An example for serving static files:
+
+Use npm package called serve to serve the project in port 5000:
+
+    install: npm install -g serve
+    serve: serve -s -l 5000 build
+
+Test that the project is running by going to http://localhost:5000
+```
+
+### Explications : 
+
+- Pour installer nodejs on a besoin de definir notre os ici ubuntu : 
+FROM ubuntu:latest
+
+- Trouver le workdir dans le projet ici : src
+WORKDIR /usr/src
+
+- Copier tous les fichiers : 
+COPY . .
+
+- curl -sL https://deb.nodesource.com/setup_16.x | bash, ici on voit qu'on a besoin de curl pour installer ca donc :
+RUN apt-get -y update && apt-get -y install curl && curl -sL https://deb.nodesource.com/setup_16.x | bash 
+
+- tous les prerequis pour installer nodejs sont bons donc on peux installer nodejs avec : 
+>pas besoin de sudo car dans un container on fonctionne deja comme admin
+RUN apt-get -y install nodejs 
+
+- Install all packages with npm install
+RUN npm install 
+
+- First you need to build the static files with npm run build
+RUN npm install && npm run build 
+
+- Use npm package called serve to serve the project in port 5000:
+    install: npm install -g serve
+RUN npm install && npm run build && npm install -g serve
+
+- serve: serve -s -l 5000 build
+CMD ["serve", "-s", "-l", "5000", "build"]
+
+### Dockerfile final :
+
+Dockerfile 
+```bash
+FROM ubuntu:latest
+
+EXPOSE 5000
+
+WORKDIR /usr/src
+
+COPY . .
+
+RUN apt-get -y update && apt-get -y install curl
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash
+RUN apt-get -y install nodejs
+
+RUN npm install && npm run build && npm install -g serve
+
+CMD ["serve", "-s", "-l", "5000", "build"]
+```
+
+### Shell 
+```bash
+docker build . -t example-frontend
+
+docker run -p 5000:5000 example-frontend
+```
