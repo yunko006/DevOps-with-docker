@@ -331,54 +331,21 @@ Use npm package called serve to serve the project in port 5000:
 Test that the project is running by going to http://localhost:5000
 ```
 
-### Explications : 
-
-- Pour installer nodejs on a besoin de definir notre os ici ubuntu : 
-FROM ubuntu:latest
-
-- Trouver le workdir dans le projet ici : src
-WORKDIR /usr/src
-
-- Copier tous les fichiers : 
-COPY . .
-
-- curl -sL https://deb.nodesource.com/setup_16.x | bash, ici on voit qu'on a besoin de curl pour installer ca donc :
-RUN apt-get -y update && apt-get -y install curl && curl -sL https://deb.nodesource.com/setup_16.x | bash 
-
-- tous les prerequis pour installer nodejs sont bons donc on peux installer nodejs avec : 
->pas besoin de sudo car dans un container on fonctionne deja comme admin
-RUN apt-get -y install nodejs 
-
-- Install all packages with npm install
-RUN npm install 
-
-- First you need to build the static files with npm run build
-RUN npm install && npm run build 
-
-- Use npm package called serve to serve the project in port 5000:
-    install: npm install -g serve
-RUN npm install && npm run build && npm install -g serve
-
-- serve: serve -s -l 5000 build
-CMD ["serve", "-s", "-l", "5000", "build"]
-
-### Dockerfile final :
+### Dockerfile :
 
 Dockerfile 
 ```bash
-FROM ubuntu:latest
+FROM node:16
+
+WORKDIR /usr/src/app
 
 EXPOSE 5000
 
-WORKDIR /usr/src
-
 COPY . .
 
-RUN apt-get -y update && apt-get -y install curl
-RUN curl -sL https://deb.nodesource.com/setup_16.x | bash
-RUN apt-get -y install nodejs
-
-RUN npm install && npm run build && npm install -g serve
+RUN npm install
+RUN npm run build
+RUN npm install -g serve
 
 CMD ["serve", "-s", "-l", "5000", "build"]
 ```
@@ -437,21 +404,19 @@ docker run -p 8080:8080 example-backend
 
 Dockerfile (frontend)
 ```bash
-FROM ubuntu:latest
+FROM node:16
+
+WORKDIR /usr/src/app
 
 EXPOSE 5000
 
-WORKDIR /usr/src
-
 COPY . .
-
-RUN apt-get -y update && apt-get -y install curl
-RUN curl -sL https://deb.nodesource.com/setup_16.x | bash
-RUN apt-get -y install nodejs
 
 ENV REACT_APP_BACKEND_URL="http://localhost:8080"
 
-RUN npm install && npm run build && npm install -g serve
+RUN npm install
+RUN npm run build
+RUN npm install -g serve
 
 CMD ["serve", "-s", "-l", "5000", "build"]
 
