@@ -389,3 +389,100 @@ docker build . -t example-frontend
 
 docker run -p 5000:5000 example-frontend
 ```
+
+
+# Mandatory Exercise 1.13: Hello, backend!
+
+Clone, fork or download a project from https://github.com/docker-hy/material-applications/tree/main/example-backend.
+
+Create a Dockerfile for the project (example-backend). Start the container with port 8080 published.
+
+When you start the container and navigate to http://localhost:8080/ping you should get a "pong" as response.
+
+Submit the Dockerfile and the command used.
+
+Do not alter the code of the project
+
+## Solution : 
+
+Dockerfile 
+```bash
+FROM golang:1.16
+
+EXPOSE 8080
+
+WORKDIR /app
+
+COPY . .
+
+RUN go build
+
+RUN go test
+
+CMD ["./server"]
+
+```
+
+Shell 
+```bash
+docker build . -t example-backend
+
+docker run -p 8080:8080 example-backend
+```
+
+
+# Mandatory Exercise 1.14: Environment
+
+## Solution : 
+
+Dockerfile (frontend)
+```bash
+FROM ubuntu:latest
+
+EXPOSE 5000
+
+WORKDIR /usr/src
+
+COPY . .
+
+RUN apt-get -y update && apt-get -y install curl
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash
+RUN apt-get -y install nodejs
+
+ENV REACT_APP_BACKEND_URL="http://localhost:8080"
+
+RUN npm install && npm run build && npm install -g serve
+
+CMD ["serve", "-s", "-l", "5000", "build"]
+
+```
+
+Dockerfile (back end)
+```bash
+FROM golang:1.16
+
+EXPOSE 8080
+
+WORKDIR /app
+
+COPY . .
+
+ENV REQUEST_ORIGIN="http://localhost:5000"
+
+RUN go build
+
+# RUN go test
+
+CMD ["./server"]
+
+```
+>surtout ne pas mettre ENV REQUEST_ORIGIN="http://localhost:5000/" le / a la fin nique tout car c'est une url pur ! Alors que ENV REQUEST_ORIGIN="http://localhost:5000" permet de prendre toutes les url du site.
+
+Shell 
+```bash
+docker build . -t frontend
+docker build . -t backend
+
+docker run -p 5000:5000 frontend
+docker run -p 8080:8080 backend
+```
