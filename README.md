@@ -451,3 +451,107 @@ docker build . -t backend
 docker run -p 5000:5000 frontend
 docker run -p 8080:8080 backend
 ```
+
+# Part 2 
+
+# Exercise 2.1
+
+Let us now leverage the Docker Compose with the simple webservice that we used in the Exercise 1.3
+
+Without a command devopsdockeruh/simple-web-service will create logs into its /usr/src/app/text.log.
+
+Create a docker-compose.yml file that starts devopsdockeruh/simple-web-service and saves the logs into your filesystem.
+
+Submit the docker-compose.yml, make sure that it works simply by running docker compose up if the log file exists.
+
+## Solution 
+
+créer un fichier text.log et un fichier docker-compose.yml
+
+docker-compose.yml
+```bash
+version: '3.8'
+
+services:
+  logger:
+    image: devopsdockeruh/simple-web-service
+    build: .
+    volumes:
+      - ./text.log:/usr/src/app/text.log
+    container_name: logger
+```
+verifier que le ficher text.log a ete rempli
+
+Shell (windows)
+```bash
+ni text.log
+
+docker compose up 
+```
+
+# Exercise 2.2
+
+Read about how to add command to docker-compose.yml from the documentation.
+
+The familiar image devopsdockeruh/simple-web-service can be used to start a web service.
+
+Create a docker-compose.yml and use it to start the service so that you can use it with your browser.
+
+Submit the docker-compose.yml, make sure that it works simply by running docker compose up
+
+## Solution
+
+docker-compose.yml
+```bash
+version: '3.8'
+
+services:
+  web-server:
+    image: devopsdockeruh/simple-web-service
+    ports:
+      - 8080:8080
+    command: [ "server" ]
+    container_name: web-server
+```
+
+# Mandatory Exercise 2.3
+
+As we saw previously, starting an application with two programs was not trivial and the commands got a bit long.
+
+In the previous part we created Dockerfiles for both frontend and backend of the example application. Next, simplify the usage into one docker-compose.yml.
+
+Configure the backend and frontend from part 1 to work in Docker Compose.
+
+Submit the docker-compose.yml
+
+## Solution 
+
+mettre les dossiers example-backend et example-frontend dans le meme dossier (ex: example-project) et créer docker-compose.yml
+donc structure tel que : 
+example-projet/
+-- example-backend/
+-- example-frontend/
+-- docker-compose.yml
+
+docker-compose.yml
+```bash
+version: '3.8'
+
+services:
+  backend:
+    build: ./example-backend
+    # environment:
+    #   - REQUEST_ORIGIN="http://localhost:5000"
+    ports:
+      - 8080:8080
+    container_name: backend
+
+  frontend:
+    build: ./example-frontend
+    # environment:
+    #   - REACT_APP_BACKEND_URL="http://localhost:8080"
+    ports:
+      - 5000:5000
+    container_name: frontend
+```
+
