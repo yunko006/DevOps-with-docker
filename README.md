@@ -734,3 +734,66 @@ services:
 volumes:
   files:
 ```
+
+# Exercise 2.8
+
+Add Nginx to example to work as a reverse proxy in front of the example app frontend and backend.
+
+## Solution 
+
+docker-compose.yml
+```bash
+version: '3.8'
+
+services:
+  backend:
+    build: ./example-backend
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=db_postgress
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DATABASE=postgres
+    ports:
+      - 8080:8080
+    container_name: backend
+
+  frontend:
+    build: ./example-frontend
+    ports:
+      - 5000:5000
+    container_name: frontend
+
+  db:
+    image: postgres:13
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - type: bind
+        source: ./database
+        target: /var/lib/postgresql/data
+    container_name: db_postgress
+
+  redis:
+    container_name: redis
+    image: redis
+    restart: unless-stopped
+
+  web:
+    image: nginx
+    volumes:
+      - type: bind
+        source: ./templates/nginx.conf
+        target: /etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+    environment:
+      - NGINX_HOST=localhost
+      - NGINX_PORT=80
+    container_name: nginx
+
+volumes:
+  files:
+
+```
