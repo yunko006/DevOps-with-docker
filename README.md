@@ -595,3 +595,142 @@ services:
     image: redis:latest
 
 ```
+
+
+# Exercise 2.5
+
+The project https://github.com/docker-hy/material-applications/tree/main/scaling-exercise is a barely working application. Go ahead and clone it for yourself. The project already includes docker-compose.yml so you can start it by running docker compose up.
+
+Application should be accessible through http://localhost:3000. However it doesn't work well enough and I've added a load balancer for scaling. Your task is to scale the compute containers so that the button in the application turns green.
+
+This exercise was created with Sasu Mäkinen
+
+Please return the used commands for this exercise.
+
+## Solution 
+
+on doit scale le dockerfile de l'app compute, les ports sont deja bien reglés il ne reste qu'a faire : 
+
+Shell
+```bash
+docker compouse up --scale compute=2
+```
+
+
+# Exercise 2.6
+
+Let us continue with the example app that we worked with in Exercise 2.4.
+
+Now you should add database to example backend.
+
+Use a Postgres database to save messages. For now there is no need to configure a volume since the official postgres image sets a default volume for us. Use the Postgres image documentation to your advantage when configuring: https://hub.docker.com/_/postgres/. Especially part Environment Variables is a valuable one.
+
+The backend README should have all the information needed to connect.
+
+There is again a button (and a form!) in the frontend that you can use to ensure your configuration is done right.
+
+Submit the docker-compose.yml
+
+## Solution 
+
+attention a bien aller sur localhost:5000 !!
+
+docker-compose.yml
+```bash
+version: '3.8'
+
+services:
+  backend:
+    build: ./example-backend
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=db_postgress
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DATABASE=postgres
+    ports:
+      - 8080:8080
+    container_name: backend
+
+  frontend:
+    build: ./example-frontend
+    ports:
+      - 5000:5000
+    container_name: frontend
+
+  db:
+    image: postgres:13
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres
+    container_name: db_postgress
+
+  redis:
+    container_name: redis
+    image: redis
+    restart: unless-stopped
+
+```
+
+# Exercise 2.7
+
+Postgres image uses a volume by default. Define manually a volume for the database in a convenient location such as in ./database so you should use now a bind mount. The image documentation may help you with the task.
+
+After you have configured the bind mount volume:
+
+    Save a few messages through the frontend
+    Run docker compose down
+    Run docker compose up and see that the messages are available after refreshing browser
+    Run docker compose down and delete the volume folder manually
+    Run docker compose up and the data should be gone
+
+    TIP: To save you the trouble of testing all of those steps, just look into the folder before trying the steps. If it's empty after docker compose up then something is wrong.
+
+Submit the docker-compose.yml
+
+The benefit of a bind mount is that since you now exactly where the data is in your file system, it is easy to create backups. If Docker managed volumes are used, the location of the data in the file system can not be controlled and that makes backups a bit less trivial...
+
+## Solution 
+
+docker-compose.yml
+```bash
+version: '3.8'
+
+services:
+  backend:
+    build: ./example-backend
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=db_postgress
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DATABASE=postgres
+    ports:
+      - 8080:8080
+    container_name: backend
+
+  frontend:
+    build: ./example-frontend
+    ports:
+      - 5000:5000
+    container_name: frontend
+
+  db:
+    image: postgres:13
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - type: bind
+        source: ./database
+        target: /var/lib/postgresql/data
+    container_name: db_postgress
+
+  redis:
+    container_name: redis
+    image: redis
+    restart: unless-stopped
+
+volumes:
+  files:
+```
