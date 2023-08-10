@@ -797,3 +797,164 @@ volumes:
   files:
 
 ```
+
+nginx.conf 
+```bash
+events { worker_connections 1024; }
+
+http {
+  server {
+    listen 80;
+
+    location / {
+      proxy_pass http://frontend:5000;
+    }
+
+    location /api/ {
+      proxy_set_header Host $host;
+      proxy_pass http://backend:8080/;
+    }
+  }
+}
+```
+
+
+# Exercise 2.9
+
+Most of the buttons may have stopped working in the example application. Make sure that every button for exercises works.
+
+Remember to take a peek into the browsers developer consoles again like we did back part 1, remember also this and this.
+
+The buttons of Nginx exercise and the first button behave differently but you want them to match.
+
+If you had to do any changes explain what you did and where.
+
+Submit the docker-compose.yml and both Dockerfiles.
+
+## Solution :
+
+docker-compose.yml (aucun changement)
+```bash
+version: '3.8'
+
+services:
+  backend:
+    build: ./example-backend
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=db_postgress
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DATABASE=postgres
+    ports:
+      - 8080:8080
+    container_name: backend
+
+  frontend:
+    build: ./example-frontend
+    ports:
+      - 5000:5000
+    container_name: frontend
+
+  db:
+    image: postgres:13
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - type: bind
+        source: ./database
+        target: /var/lib/postgresql/data
+    container_name: db_postgress
+
+  redis:
+    container_name: redis
+    image: redis
+    restart: unless-stopped
+
+  web:
+    image: nginx
+    volumes:
+      - type: bind
+        source: ./templates/nginx.conf
+        target: /etc/nginx/nginx.conf
+    ports:
+      - 80:80
+    environment:
+      - NGINX_HOST=localhost
+      - NGINX_PORT=80
+    depends_on:
+      - frontend
+      - backend
+    container_name: nginx
+
+volumes:
+  templates:
+
+```
+
+nginx.conf (aucun changement)
+```bash
+events { worker_connections 1024; }
+
+http {
+  server {
+    listen 80;
+
+    location / {
+      proxy_pass http://frontend:5000;
+    }
+
+    location /api/ {
+      proxy_set_header Host $host;
+      proxy_pass http://backend:8080/;
+    }
+  }
+}
+```
+
+Dockerfile (frontend) CHANGEMENT
+```bash
+FROM node:16
+
+WORKDIR /usr/src/app
+
+EXPOSE 5000
+
+COPY . .
+
+ENV REACT_APP_BACKEND_URL=http://localhost/api/
+
+RUN npm install
+RUN npm run build
+RUN npm install -g serve
+
+CMD serve -s -l 5000 build
+```
+>changer ENV REACT_APP_BACKEND_URL="http://localhost:8080" par ENV REACT_APP_BACKEND_URL=http://localhost/api/
+
+Dockerfile (backend) AUCUN CHANGEMENT
+```bash
+FROM golang:1.16
+
+EXPOSE 8080
+
+WORKDIR /app
+
+# Copy the source code
+COPY . .
+
+
+ENV REQUEST_ORIGIN=http://localhost:5000/
+
+# Build
+RUN go build
+
+# Run tests (Optional)
+# RUN go test
+
+# Run the server
+CMD ["./server"]
+
+```
+>j'ai du delete et remonter tous mes containers/images/volumes pour que tout marche bien
