@@ -13,7 +13,7 @@ Stop two of the containers and leave one container running.
 Submit the output for docker ps -a which shows 2 stopped containers and one running.
 
 Solutions : 
-![1.1](image-1.png)
+![1.1](img/image-1.png)
 
 
 # Exercise 1.2: Cleanup
@@ -25,8 +25,8 @@ Clean the Docker daemon by removing all images and containers.
 Submit the output for docker ps -a and docker images
 
 Solution :
-![1.2.1](image.png)
-![1.2.2](image-2.png)
+![1.2.1](img/image.png)
+![1.2.2](img/image-2.png)
 
 
 # Exercise 1.3 : Secret message
@@ -68,7 +68,7 @@ helsinki.fi
 # Exercise 1.5 : 
 
 Part 1 : 
-![1.51](image-6.png)
+![1.51](img/image-6.png)
 
 l'image ubuntu est bcp plus grosse que l'image alpine
 
@@ -958,3 +958,6 @@ CMD ["./server"]
 
 ```
 >j'ai du delete et remonter tous mes containers/images/volumes pour que tout marche bien
+
+preuve :
+![2.9](img/img/image-3.png)
