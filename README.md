@@ -960,4 +960,4 @@ CMD ["./server"]
 >j'ai du delete et remonter tous mes containers/images/volumes pour que tout marche bien
 
 preuve :
-![2.9](img/img/image-3.png)
+![2.9](img/image-3.png)
