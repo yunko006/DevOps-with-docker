@@ -960,4 +960,77 @@ CMD ["./server"]
 >j'ai du delete et remonter tous mes containers/images/volumes pour que tout marche bien
 
 preuve :
+
 ![2.9](img/image-3.png)
+
+
+# Exercise 2.10
+
+Now we have the reverse proxy up and running! All the communication to our app should be done through the reverse proxy and direct access (eg. accessing the backend with a GET to http://localhost:8080/ping ) should be prevented.
+
+Use a port scanner, eg https://hub.docker.com/r/networkstatic/nmap to ensure that there are no extra ports open in the host.
+
+## Solution 
+
+supprimer la declaration des ports dans le docker-compose.yml 
+
+```bash
+version: '3.8'
+
+services:
+  backend:
+    build: ./example-backend
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=db_postgress
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DATABASE=postgres
+    # ports:
+    #   - 8080:80
+    container_name: backend
+
+  frontend:
+    build: ./example-frontend
+    # ports:
+    #   - 5000:80
+    container_name: frontend
+
+  db:
+    image: postgres:13
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - type: bind
+        source: ./database
+        target: /var/lib/postgresql/data
+    container_name: db_postgress
+
+  redis:
+    container_name: redis
+    image: redis
+    restart: unless-stopped
+
+  web:
+    image: nginx
+    volumes:
+      - type: bind
+        source: ./templates/nginx.conf
+        target: /etc/nginx/nginx.conf
+    ports:
+      - 80:80
+    environment:
+      - NGINX_HOST=localhost
+      - NGINX_PORT=80
+    depends_on:
+      - frontend
+      - backend
+    container_name: nginx
+
+volumes:
+  templates:
+
+```
+
+![Alt text](img/image-4.png)
