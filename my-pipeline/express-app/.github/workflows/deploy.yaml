@@ -1,4 +1,4 @@
-name: Release NodeJS app
+name: Release express app
 
 on:
   push:
