@@ -1034,3 +1034,88 @@ volumes:
 ```
 
 ![Alt text](img/image-4.png)
+
+
+# Exercise 3.1: Your pipeline
+
+Create now a similar deployment pipeline for a simple NodeJS/Express app found here.
+
+Either clone the project or copy the files to your own repository. Set up similar deployment pipeline (or the "first half") using GitHub Actions that was just described. Ensure that a new image gets pushed to Docker Hub every time you push the code to GitHub (you may eg. change the message the app shows).
+
+## Solution 
+
+1) créer un dossier .github/workflows dans le base dir puis créer un fichier "deploy.yaml"
+
+2) Ecrire dans le fichier : 
+```yaml
+name: Release express app
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish-docker-hub:
+    name: Publish image to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: yunko006/express-app:latest
+```
+
+3) Mettre les secrets en place dans le repo -> Settings -> Secrets and Variables -> Actions -> New repo secret 
+- mettre DOCKERHUB_USERNAME et DOCKERHUB_TOKEN 
+
+4) Verifier que l'action se passe bien 
+
+![deploy](img/deloy.png)
+
+5) Set up Watchtower : créer une fichier docker-compose.yml et écrire : 
+
+```yml
+version: "3.8"
+
+services:
+  watchtower:
+    image: containrrr/watchtower
+    environment:
+      -  WATCHTOWER_POLL_INTERVAL=60 # Poll every 60 seconds
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    container_name: watchtower
+```
+
+6) pull l'image depuis docker hub : 
+
+```bash
+docker pull yunko006/express-app:latest
+```
+
+7) lancer le container : 
+```bash
+docker run -d -p 8080:8080 yunko006/express-app # docker image ls pour voir le nom de l'image
+```
+
+8) lancer watchtower (allez dans le base dir de l'app)
+```bash
+docker compose up 
+```
+
+9) faire un changement dans le code (index.js) et le commit. Verifier que watchtower le detecte bien : 
+
+![change](img/change.png)
+
+
+10) gg wp
